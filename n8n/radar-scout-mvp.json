@@ -1,0 +1,177 @@
+{
+  "name": "Radar Scout MVP",
+  "nodes": [
+    {
+      "parameters": {
+        "type": "manual"
+      },
+      "id": "manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "source",
+              "value": "reddit"
+            },
+            {
+              "name": "url",
+              "value": "https://www.reddit.com/r/marketing/comments/example"
+            },
+            {
+              "name": "content",
+              "value": "Replace this with actual post text or scraped content."
+            }
+          ]
+        }
+      },
+      "id": "edit-fields",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.editFields",
+      "typeVersion": 1,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Mock source post for testing\nreturn [{\n  json: {\n    source: 'reddit',\n    url: 'https://www.reddit.com/r/marketing/comments/example',\n    content: 'Replace this with actual post text or scraped content.'\n  }\n}];\n"
+      },
+      "id": "mock-source-post",
+      "name": "Mock Source Post",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpRequest",
+        "sendBody": true,
+        "body": "={\n  \"model\": \"openrouter/auto\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a content analyst. Return only valid JSON.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Analyze this content: {{ $json.content }}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "openrouter-analyze-signal",
+      "name": "OpenRouter -- Analyze Signal",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [660, 0],
+      "credentials": null
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse the AI response and prepare for Notion\nconst data = $input.first().json;\nconst choices = data.choices || [];\nconst message = choices[0]?.message?.content || '{}';\n\nlet parsed;\ntry {\n  parsed = JSON.parse(message);\n} catch (e) {\n  parsed = {\n    signal_type: 'Unknown',\n    mechanic: '',\n    why_it_works: '',\n    relevance: 'Low',\n    adaptation_hint: '',\n    _raw: message\n  };\n}\n\nreturn [{\n  json: {\n    source: $json.source,\n    url: $json.url,\n    ...parsed\n  }\n}];\n"
+      },
+      "id": "parse-ai-analysis",
+      "name": "Parse AI Analysis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [880, 0]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "database": "PLACEHOLDER_DATABASE_ID",
+        "properties": {
+          "title": [
+            {
+              "text": {
+                "text": "={{ $json.signal_type || 'Untitled Signal' }}"
+              }
+            }
+          ],
+          "select": {
+            "Source": "={{ $json.source }}"
+          },
+          "url": {
+            "url": "={{ $json.url }}"
+          },
+          "richText": [
+            {
+              "text": {
+                "text": "={{ $json.mechanic }}"
+              }
+            }
+          ]
+        }
+      },
+      "id": "notion-create-signal",
+      "name": "Notion -- Create Signal",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2,
+      "position": [1100, 0],
+      "credentials": null
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Mock Source Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mock Source Post": {
+      "main": [
+        [
+          {
+            "node": "OpenRouter -- Analyze Signal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter -- Analyze Signal": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Analysis": {
+      "main": [
+        [
+          {
+            "node": "Notion -- Create Signal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2026-09-06T21:40:00.000Z",
+  "versionId": "1"
+}
