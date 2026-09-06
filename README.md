@@ -1,1 +1,1 @@
-# viral-post-scraper
+# radar-scout
