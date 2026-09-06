@@ -5,6 +5,12 @@
 - Single-source mock pipeline (Reddit → OpenRouter → Notion)
 - Basic signal extraction prompt
 - Save to Notion database
+- Manual n8n Cloud credential setup:
+  1. Create Notion API credential with integration token
+  2. Create OpenRouter HTTP Header Auth credential with API key
+  3. Attach credentials to respective workflow nodes
+  4. Replace `PLACEHOLDER_DATABASE_ID` with actual Notion database ID
+  5. Run mock workflow before connecting live sources
 
 ## Phase 2 — Multi-source
 - Add X, LinkedIn, TikTok connectors

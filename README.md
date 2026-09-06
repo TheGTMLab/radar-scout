@@ -8,12 +8,15 @@ Internal content-reconnaissance workflow that collects high-signal GTM content f
 - `prompts/` — LLM prompt definitions
 - `docs/` — Notion schema and roadmap
 
-## Getting Started
+## Setup Checklist
 
-1. Import `n8n/radar-scout-mvp.json` into n8n (manual import).
-2. Configure the HTTP Request node with your OpenRouter endpoint and API key.
-3. Configure the Notion node with your database ID and credentials.
-4. Review `prompts/signal-analysis.md` and adjust to taste.
+After importing the workflow into n8n Cloud, create and attach the required credentials manually in n8n. Credentials, API keys, OAuth tokens, Notion integration tokens, and database IDs are intentionally not included in this repository or in the workflow export.
+
+1. Import `n8n/radar-scout-mvp.json` into n8n Cloud.
+2. Create or connect the Notion credential manually.
+3. Create the OpenRouter HTTP Header Auth credential manually.
+4. Configure the Notion database and replace `PLACEHOLDER_DATABASE_ID`.
+5. Run the mock workflow before adding a live collection source.
 
 ## Security
 
