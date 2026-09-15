@@ -3,134 +3,135 @@
   "nodes": [
     {
       "parameters": {
-        "type": "manual"
-      },
-      "id": "manual-trigger",
-      "name": "Manual Trigger",
-      "type": "n8n-nodes-base.manualTrigger",
-      "typeVersion": 1,
-      "position": [0, 0]
-    },
-    {
-      "parameters": {
-        "values": {
-          "string": [
-            {
-              "name": "source",
-              "value": "reddit"
-            },
-            {
-              "name": "url",
-              "value": "https://www.reddit.com/r/marketing/comments/example"
-            },
-            {
-              "name": "content",
-              "value": "Replace this with actual post text or scraped content."
-            }
-          ]
-        }
-      },
-      "id": "edit-fields",
-      "name": "Edit Fields",
-      "type": "n8n-nodes-base.editFields",
-      "typeVersion": 1,
-      "position": [220, 0]
-    },
-    {
-      "parameters": {
         "jsCode": "// Mock source post for testing\nreturn [{\n  json: {\n    source: 'reddit',\n    url: 'https://www.reddit.com/r/marketing/comments/example',\n    content: 'Replace this with actual post text or scraped content.'\n  }\n}];\n"
       },
-      "id": "mock-source-post",
+      "id": "dc273850-b20b-4454-a1cf-1a13de1caed8",
       "name": "Mock Source Post",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [440, 0]
+      "position": [
+        96,
+        544
+      ]
     },
     {
       "parameters": {
         "method": "POST",
         "url": "https://openrouter.ai/api/v1/chat/completions",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "httpRequest",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": []
+        },
         "sendBody": true,
-        "body": "={\n  \"model\": \"openrouter/free\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a content analyst. Return only valid JSON.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Analyze this content: {{ $json.content }}\"\n    }\n  ]\n}",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "Credential",
+              "value": "OpenRouter — Radar Scout"
+            },
+            {}
+          ]
+        },
         "options": {}
       },
-      "id": "openrouter-analyze-signal",
+      "id": "a1bec5e7-fb28-4b87-8f07-f8d1b3025ca4",
       "name": "OpenRouter -- Analyze Signal",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
-      "position": [660, 0],
-      "credentials": null
+      "position": [
+        272,
+        544
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "IZQnANjG8ByuN9ov",
+          "name": "Header Auth account"
+        }
+      }
     },
     {
       "parameters": {
         "jsCode": "// Parse the AI response and prepare for Notion\nconst data = $input.first().json;\nconst choices = data.choices || [];\nconst message = choices[0]?.message?.content || '{}';\n\nlet parsed;\ntry {\n  parsed = JSON.parse(message);\n} catch (e) {\n  parsed = {\n    signal_type: 'Unknown',\n    mechanic: '',\n    why_it_works: '',\n    relevance: 'Low',\n    adaptation_hint: '',\n    _raw: message\n  };\n}\n\nreturn [{\n  json: {\n    source: $json.source,\n    url: $json.url,\n    ...parsed\n  }\n}];\n"
       },
-      "id": "parse-ai-analysis",
+      "id": "9dcf72e5-df66-4196-a3af-00a874e7aed7",
       "name": "Parse AI Analysis",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [880, 0]
+      "position": [
+        464,
+        544
+      ]
     },
     {
       "parameters": {
-        "operation": "create",
-        "database": "PLACEHOLDER_DATABASE_ID",
-        "properties": {
-          "title": [
-            {
-              "text": {
-                "text": "={{ $json.signal_type || 'Untitled Signal' }}"
-              }
-            }
-          ],
-          "select": {
-            "Source": "={{ $json.source }}"
-          },
-          "url": {
-            "url": "={{ $json.url }}"
-          },
-          "richText": [
-            {
-              "text": {
-                "text": "={{ $json.mechanic }}"
-              }
-            }
-          ]
+        "resource": "database",
+        "databaseId": {
+          "__rl": true,
+          "value": "3d3b21e5-c22b-8028-b441-f59815d84572",
+          "mode": "id"
         }
       },
-      "id": "notion-create-signal",
+      "id": "8b6a7933-d318-4069-97fc-0c921291f121",
       "name": "Notion -- Create Signal",
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2,
-      "position": [1100, 0],
-      "credentials": null
+      "position": [
+        656,
+        544
+      ],
+      "credentials": {
+        "notionApi": {
+          "id": "15AKqrKouGNjn7kS",
+          "name": "Notion account 2"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        544
+      ],
+      "id": "b6776f13-73ff-450c-af6c-3d644ff8315f",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -48,
+        544
+      ],
+      "id": "88049093-ae37-456e-a527-36d1dd90176a",
+      "name": "Edit Fields"
     }
   ],
+  "pinData": {
+    "OpenRouter -- Analyze Signal": [
+      {
+        "json": {
+          "name": "First item",
+          "code": 1
+        }
+      },
+      {
+        "json": {
+          "name": "Second item",
+          "code": 2
+        }
+      }
+    ]
+  },
   "connections": {
-    "Manual Trigger": {
-      "main": [
-        [
-          {
-            "node": "Edit Fields",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Edit Fields": {
-      "main": [
-        [
-          {
-            "node": "Mock Source Post",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Mock Source Post": {
       "main": [
         [
@@ -163,15 +164,41 @@
           }
         ]
       ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Mock Source Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "pinData": {},
+  "active": false,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "binaryMode": "separate"
   },
-  "staticData": null,
-  "tags": [],
-  "triggerCount": 1,
-  "updatedAt": "2026-09-06T21:40:00.000Z",
-  "versionId": "1"
+  "versionId": "ea6d4412-ff57-461d-a39d-4112c5be7cf2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3255fdc32391d131d390e6f12ab1bbed29745caf1d6ba4a73afdf557ab8796c9"
+  },
+  "nodeGroups": [],
+  "id": "5yUtdNp7ONgYwwvf",
+  "tags": []
 }
