@@ -8,3 +8,9 @@ SOUL.md
 TOOLS.md
 USER.md
 openclaw-workspace-state.json
+
+# Local n8n connection settings
+.env.local
+
+# Local n8n connection settings
+.env.local
